@@ -1,5 +1,5 @@
 template <unsigned ROWS, unsigned COLS>
-void Display<ROWS, COLS>::draw(std::function<bool(Color, int x, int y)> f)
+void Display<ROWS, COLS>::draw(bool (*f)(Color, int x, int y))
 {
     // !!! Shift registers are loaded in reverse order
 

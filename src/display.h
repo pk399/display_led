@@ -2,7 +2,8 @@
 #define _DISPLAY_H_
 
 #include "shift.h"
-#include <functional>
+
+enum Color {Red = 0, Green = 1, Blue = 2};
 
 template <unsigned ROWS, unsigned COLS>
 class Display
@@ -11,9 +12,7 @@ public:
     Display(Shift&& output)
         : out{(Shift&&) output} {}
 
-    enum Color {Red = 0, Green = 1, Blue = 2};
-
-    void draw(std::function<bool(Color, int x, int y)> f);
+    void draw(bool (*f)(Color, int x, int y));
     
     void draw(const bool* r, const bool* g, const bool* b)
     {
