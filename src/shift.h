@@ -19,8 +19,7 @@ private:
     Shift& out;
     unsigned take;
 
-    // wtf? 
-    inline static void busy_sleep() {  } 
+    inline static void busy_sleep() {} // No need to  //for (int i; i < 10000; i++) ;  } 
 };
 
 // Shift register

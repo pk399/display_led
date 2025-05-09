@@ -3,7 +3,8 @@
 
 namespace pstd
 {
-#include <pico/stdlib.h>
+#include "pico/stdlib.h"
+#include "hardware/i2c.h" 
 }
 
 #endif // _PICOSTD_H_

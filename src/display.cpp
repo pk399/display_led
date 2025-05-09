@@ -1,3 +1,5 @@
+#include "picostd.h"
+
 template <unsigned ROWS, unsigned COLS>
 void Display<ROWS, COLS>::draw(bool (*f)(Color, int x, int y))
 {
@@ -16,6 +18,12 @@ void Display<ROWS, COLS>::draw(bool (*f)(Color, int x, int y))
         {
             l << f(Red, j, i) << f(Green, j, i) << f(Blue, j, i);
         }
+    }
 
+    // Leave display turned off
+    auto l = out.latch( 1 );
+    for (int i = 0; i < COLS*3 + ROWS; i++)
+    {
+        l << 0;
     }
 }
