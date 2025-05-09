@@ -1,7 +1,8 @@
 #include "picostd.h"
 #include "display.h"
 #include "config.h"
-#include "timer.h"
+#include "program.h"
+#include "picture.h"
 
 constexpr int I2C_ADDR = 0x0E;
 
@@ -13,37 +14,13 @@ constexpr int SDA_PIN = 20;
 constexpr int SCL_PIN = 21;
 constexpr int BLINKY_PIN = 25;
 
-namespace anim
-{
-    // Global timer
-    unsigned t = 0;
-
-    bool kind = 0;
-
-    auto vert_rainbow = [](Color c, int x, int y) -> bool
-    {
-        switch ( (x + t) % 3 )
-        {
-        case 0: return true && !( t + x % COLS );
-        case 1: return c == Blue;
-        case 2: return c == Red; 
-        }
-    };
-
-    auto horz_rainbow = [](Color c, int x, int y) -> bool
-    {
-        return (c == Blue) && (y + t) % 2 == 0;
-    };
-}
+#define MILLION 1000000
 
 Display<ROWS, COLS>* display;
-Timer* timer;
 
-extern "C" void button_callback(pstd::uint gpio, pstd::uint32_t events)
-{
-    anim::t = 0;
-    anim::kind = !anim::kind;
-}
+unsigned delay = MILLION / DEFAULT_FPS;
+
+Program* game;
 
 void setup()
 {
@@ -54,11 +31,6 @@ void setup()
     timer = new Timer(500000, []() -> bool {anim::t++; return true;});
 
     // TODO remove manual pin init
-
-    // Button interrupt
-    pstd::gpio_init( BUTTON_PIN );
-    pstd::gpio_pull_up( BUTTON_PIN );
-    pstd::gpio_set_irq_enabled_with_callback( BUTTON_PIN, pstd::GPIO_IRQ_EDGE_RISE, true, &button_callback) ;
 
     // I2C 
     pstd::gpio_init( SDA_PIN );
@@ -71,16 +43,24 @@ void setup()
 
 void loop()
 {
+    if (!game) { game = new //TODO; }
+
     if ( pstd::i2c_get_read_available( &pstd::i2c0_inst ) > 0 ) {
         anim::kind = !anim::kind;
         pstd::uint8_t buf {};
         pstd::i2c_read_raw_blocking( &pstd::i2c0_inst, &buf, 1 );
     }    
 
-    display->draw( anim::kind ? anim::horz_rainbow : anim::vert_rainbow );
-    //anim::t++;
-    //pstd::sleep_us( 100 );
-    //for (int i = 0; i < 100000; i++) ;
+    Input in{};
+
+    auto res = game.update(delay, in);
+
+    if (res)
+        display->draw( pic::DrawArray(res.value()) );
+    else
+        delete game;
+
+    pstd::sleep_us( delay );
 }
 
 int main()
