@@ -1,7 +1,9 @@
-#include "picostd.h"
+#include "common.h"
 
+namespace display_impl
+{
 template <unsigned ROWS, unsigned COLS>
-void Display<ROWS, COLS>::draw(bool (*f)(Color, int x, int y))
+void Display<ROWS, COLS>::draw(std::function<bool(Pixel c, int x, int y)> f)
 {
     // !!! Shift registers are loaded in reverse order
 
@@ -26,4 +28,6 @@ void Display<ROWS, COLS>::draw(bool (*f)(Color, int x, int y))
     {
         l << 0;
     }
+}
+
 }

@@ -1,39 +1,22 @@
 #ifndef _PROGRAM_H_
 #define _PROGRAM_H_
 
-#include <optional>
-#include <array>
-
+#include "common.h"
 #include "config.h"
-#include "picture.h"
+#include "display.h"
 
-using namespace pic;
-
-class Input
-{
-private:
-unsigned bits{};
-public:
-    Input() {}
-    Input(unsigned bb): bits{bb} {}
-
-    bool operator[](int idx) { return 1 & (bits >> idx); }
-    void set(int idx) { bits |= 1 << idx; }
-};
+typedef std::vector<int> Input;
 
 class Program
 {
 public:
-virtual Program() = 0;
-
-virtual std::optional<std::array<Pixel, ROWS*COLS>> update(unsgined delta_us, Input inputs) = 0;
+virtual std::pair<bool, std::array<Pixel, ROWS*COLS>> update(unsigned delta_us, Input& inputs) = 0;
 
 virtual unsigned short preferredFPS()
 {
     return DEFAULT_FPS;
 }
 
-virtual ~Program() = 0;
 };
 
 

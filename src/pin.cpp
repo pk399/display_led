@@ -18,14 +18,14 @@ PinOut::PinOut(unsigned nn): Pin{nn}
 {
     if ( !n() ) return;
 
-    pstd::gpio_init( n() );
-    pstd::gpio_set_dir( n(), true );
+    gpio_init( n() ); // pstd
+    gpio_set_dir( n(), true ); //pstd
 }
 
 bool PinOut::operator=(bool a)
 {
     if ( !n() ) return a;
 
-    pstd::gpio_put( n(), a );
+    gpio_put( n(), a ); // pstd
     return a;
 }

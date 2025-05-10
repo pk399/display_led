@@ -1,6 +1,7 @@
 #include "program.h"
+#include "picture.h"
 #include <array>
-#include <optional>
+#include <utility>
 #include <vector>
 
 constexpr int COLS = 5;
@@ -28,7 +29,7 @@ public:
         resetGame();
     }
 
-    std::optional<std::array<Pixel, ROWS*COLS>> update(unsigned delta_us, Input inputs) override {
+    std::pair<bool, std::array<Pixel, ROWS*COLS>> update(unsigned delta_us, Input inputs) override {
         if (gameOver) return std::nullopt;
 
         // Только движение влево/вправо

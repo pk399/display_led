@@ -1,11 +1,11 @@
 #ifndef _TIMER_H_
 #define _TIMER_H_
 
-#include "picostd.h"
+#include "common.h"
 
 namespace DONOTTOUCH
 {
-extern "C" pstd::int64_t alarm_callback(pstd::alarm_id_t id, void* user_data);
+extern "C" int64_t alarm_callback(alarm_id_t id, void* user_data); // pstd
 }
 
 class Timer
@@ -14,8 +14,8 @@ private:
 bool rrunning {true};
 bool (*callback)();
 unsigned delay;
-pstd::alarm_pool_t* pool;
-pstd::alarm_id_t alarm_id;
+alarm_pool_t* pool; // pstd
+alarm_id_t alarm_id; // pstd
 
 public:
 Timer(unsigned delay_us, bool(*callbackk)()): delay{delay_us}, callback{callbackk}

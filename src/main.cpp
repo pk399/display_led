@@ -1,8 +1,8 @@
-#include "picostd.h"
+#include "common.h"
 #include "display.h"
 #include "config.h"
 #include "program.h"
-#include "picture.h"
+//#include "tetris.cpp"
 
 constexpr int I2C_ADDR = 0x0E;
 
@@ -16,7 +16,7 @@ constexpr int BLINKY_PIN = 25;
 
 #define MILLION 1000000
 
-Display<ROWS, COLS>* display;
+Display* display;
 
 unsigned delay = MILLION / DEFAULT_FPS;
 
@@ -24,31 +24,28 @@ Program* game;
 
 void setup()
 {
-    pstd::stdio_init_all();
+    stdio_init_all(); // pstd
 
-    display = new Display<ROWS, COLS> {Shift {DATA_PIN, LATCH_PIN, CLOCK_PIN}};
-
-    timer = new Timer(500000, []() -> bool {anim::t++; return true;});
+    display = new Display {Shift {DATA_PIN, LATCH_PIN, CLOCK_PIN}};
 
     // TODO remove manual pin init
 
-    // I2C 
-    pstd::gpio_init( SDA_PIN );
-    pstd::gpio_init( SCL_PIN );
-    pstd::gpio_set_function( SDA_PIN, pstd::GPIO_FUNC_I2C );
-    pstd::gpio_set_function( SCL_PIN, pstd::GPIO_FUNC_I2C );
-    pstd::i2c_init( &pstd::i2c0_inst, 100 * 1000 ); 
-    pstd::i2c_set_slave_mode( &pstd::i2c0_inst, true, I2C_ADDR );
+    // I2C
+    gpio_init( SDA_PIN );
+    gpio_init( SCL_PIN );
+    gpio_set_function( SDA_PIN, GPIO_FUNC_I2C );
+    gpio_set_function( SCL_PIN, GPIO_FUNC_I2C );
+    i2c_init( i2c0, 100 * 1000 ); 
+    i2c_set_slave_mode( i2c0, true, I2C_ADDR );
 }
 
 void loop()
 {
-    if (!game) { game = new //TODO; }
+    if (!game) { game = new Tetris; }
 
-    if ( pstd::i2c_get_read_available( &pstd::i2c0_inst ) > 0 ) {
-        anim::kind = !anim::kind;
-        pstd::uint8_t buf {};
-        pstd::i2c_read_raw_blocking( &pstd::i2c0_inst, &buf, 1 );
+    if ( i2c_get_read_available( i2c0 ) > 0 ) {
+        uint8_t buf {};
+        i2c_read_raw_blocking( i2c0, &buf, 1 );
     }    
 
     Input in{};
@@ -56,11 +53,11 @@ void loop()
     auto res = game.update(delay, in);
 
     if (res)
-        display->draw( pic::DrawArray(res.value()) );
+        display->draw( res.value() );
     else
         delete game;
 
-    pstd::sleep_us( delay );
+    sleep_us( delay );
 }
 
 int main()
