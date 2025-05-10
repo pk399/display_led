@@ -2,7 +2,8 @@
 #include "display.h"
 #include "config.h"
 #include "program.h"
-//#include "tetris.cpp"
+
+#include "tetris.cpp"
 
 constexpr int I2C_ADDR = 0x0E;
 
@@ -50,7 +51,7 @@ void loop()
 
     Input in{};
 
-    auto res = game.update(delay, in);
+    auto res = game->update(delay, in);
 
     if (res)
         display->draw( res.value() );

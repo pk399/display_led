@@ -4,7 +4,7 @@
 #include "config.h"
 #include "shift.h"
 
-enum Pixel {Red = 1, Green = 2, Blue = 4};
+enum Pixel {RED = 1, GREEN = 2, BLUE = 4};
 
 namespace display_impl
 {
@@ -25,13 +25,13 @@ public:
             const bool* p;
             switch (c)
             {
-            case Red:
+            case RED:
                 p = r;
                 break;
-            case Green:
+            case GREEN:
                 p = g;
                 break;
-            case Blue:
+            case BLUE:
                 p = b;
             }
 

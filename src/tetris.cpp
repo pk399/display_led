@@ -1,11 +1,5 @@
+#include "common.h"
 #include "program.h"
-#include "picture.h"
-#include <array>
-#include <utility>
-#include <vector>
-
-constexpr int COLS = 5;
-constexpr int ROWS = 6;
 
 class Tetris : public Program {
 private:
@@ -29,12 +23,14 @@ public:
         resetGame();
     }
 
-    std::pair<bool, std::array<Pixel, ROWS*COLS>> update(unsigned delta_us, Input inputs) override {
+    std::optional<std::array<Pixel, ROWS*COLS>> update(unsigned delta_us, const Input& inp) override {
         if (gameOver) return std::nullopt;
 
+        auto inputs = std::set<int>(inp.begin(), inp.end());
+
         // Только движение влево/вправо
-        if (inputs[0] && canMove(-1, 0)) piecePos.x--;  // Влево (кнопка 0)
-        if (inputs[1] && canMove(1, 0))  piecePos.x++;   // Вправо (кнопка 1)
+        if (inputs.contains(0) && canMove(-1, 0)) piecePos.x--;  // Влево (кнопка 0)
+        if (inputs.contains(1) && canMove(1, 0))  piecePos.x++;   // Вправо (кнопка 1)
 
         // Автоматическое падение
         static unsigned int fallTimer = 0;

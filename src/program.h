@@ -10,7 +10,7 @@ typedef std::vector<int> Input;
 class Program
 {
 public:
-virtual std::pair<bool, std::array<Pixel, ROWS*COLS>> update(unsigned delta_us, Input& inputs) = 0;
+virtual std::optional<std::array<Pixel, ROWS*COLS>> update(unsigned delta_us, const Input& inputs) = 0;
 
 virtual unsigned short preferredFPS()
 {

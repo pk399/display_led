@@ -1,4 +1,4 @@
-#include "picostd.h"
+#include "common.h"
 #include "shift.h"
 
 auto Latch::operator<<(unsigned x) -> Latch&

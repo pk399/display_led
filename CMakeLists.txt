@@ -6,7 +6,7 @@ include(pico_sdk_import.cmake)
 
 project(display_led C CXX ASM)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 pico_sdk_init()
 
 add_executable(display_led

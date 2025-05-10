@@ -18,7 +18,7 @@ void Display<ROWS, COLS>::draw(std::function<bool(Pixel c, int x, int y)> f)
 
         for (int j = (COLS - 1); j >= 0; --j)
         {
-            l << f(Red, j, i) << f(Green, j, i) << f(Blue, j, i);
+            l << f(RED, j, i) << f(GREEN, j, i) << f(BLUE, j, i);
         }
     }
 
