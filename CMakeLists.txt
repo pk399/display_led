@@ -16,8 +16,8 @@ add_executable(display_led
 )
 
 pico_enable_stdio_usb(display_led 1)
-#pico_enable_stdio_uart(display_led 1)
+pico_enable_stdio_uart(display_led 1)
 
 pico_add_extra_outputs(display_led)
 
-target_link_libraries(display_led pico_stdlib hardware_i2c)
+target_link_libraries(display_led pico_stdlib)

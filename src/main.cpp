@@ -6,14 +6,14 @@
 #include "tetris.cpp"
 #include "circles.cpp"
 
-constexpr int I2C_ADDR = 0x0E;
+constexpr int UART_BAUD = 115200;
 
 constexpr int CLOCK_PIN = 16;
 constexpr int LATCH_PIN = 17;
 constexpr int DATA_PIN = 18;
 constexpr int BUTTON_PIN = 19;
-constexpr int SDA_PIN = 20;
-constexpr int SCL_PIN = 21;
+constexpr int UART_TX_PIN = 20; // UART1
+constexpr int UART_RX_PIN = 21;
 constexpr int BLINKY_PIN = 25;
 
 #define MILLION 1000000
@@ -32,13 +32,12 @@ void setup()
 
     // TODO remove manual pin init
 
-    // I2C
-    gpio_init( SDA_PIN );
-    gpio_init( SCL_PIN );
-    gpio_set_function( SDA_PIN, GPIO_FUNC_I2C );
-    gpio_set_function( SCL_PIN, GPIO_FUNC_I2C );
-    i2c_init( i2c0, 100 * 1000 ); 
-    i2c_set_slave_mode( i2c0, true, I2C_ADDR );
+    // UART
+    gpio_init( UART_TX_PIN );
+    gpio_init( UART_RX_PIN );
+    gpio_set_function(UART_TX_PIN, UART_FUNCSEL_NUM(uart1, UART_TX_PIN));
+    gpio_set_function(UART_RX_PIN, UART_FUNCSEL_NUM(uart1, UART_RX_PIN));
+    uart_init(uart1, UART_BAUD);
 }
 
 void loop()
@@ -47,9 +46,9 @@ void loop()
     
     Input in{};
 
-    while ( i2c_get_read_available( i2c0 ) > 0 ) {
+    while ( uart_is_readable( uart1 ) > 0 ) {
         uint8_t buf {};
-        i2c_read_raw_blocking( i2c0, &buf, 1 );
+        uart_read_blocking( uart1, &buf, 1 );
         in.push_back( buf );
     }
 

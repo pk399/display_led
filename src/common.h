@@ -2,7 +2,7 @@
 #define _COMMON_H_
 
 #include "pico/stdlib.h"
-#include "hardware/i2c.h" 
+#include "hardware/uart.h" 
 
 #include <array>
 #include <optional>
