@@ -6,6 +6,8 @@
 
 enum Pixel {RED = 1, GREEN = 2, BLUE = 4};
 
+typedef std::array<Pixel, ROWS*COLS> Picture;
+
 namespace display_impl
 {
 
@@ -39,11 +41,11 @@ public:
         });
     }
 
-    void draw(const std::array<Pixel, ROWS*COLS> a)
+    void draw(const Picture a)
     {
-        draw([&a](Pixel col, int x, int y) -> bool 
+        draw([a](Pixel col, int x, int y) -> bool 
             {       
-                return a[x + y*COLS] | col;
+                return a[x + y*COLS] & col;
             }
         );
     }

@@ -4,6 +4,7 @@
 #include "program.h"
 
 #include "tetris.cpp"
+#include "circles.cpp"
 
 constexpr int I2C_ADDR = 0x0E;
 
@@ -42,21 +43,25 @@ void setup()
 
 void loop()
 {
-    if (!game) { game = new Tetris; }
-
-    if ( i2c_get_read_available( i2c0 ) > 0 ) {
-        uint8_t buf {};
-        i2c_read_raw_blocking( i2c0, &buf, 1 );
-    }    
-
+    if (!game) { game = new Circles; }
+    
     Input in{};
 
-    auto res = game->update(delay, in);
+    while ( i2c_get_read_available( i2c0 ) > 0 ) {
+        uint8_t buf {};
+        i2c_read_raw_blocking( i2c0, &buf, 1 );
+        in.push_back( buf );
+    }
+
+    auto res = game->update( delay, in );
 
     if (res)
         display->draw( res.value() );
     else
+    {
         delete game;
+        game = new Tetris;
+    }
 
     sleep_us( delay );
 }
