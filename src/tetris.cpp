@@ -1,131 +1,109 @@
-#include "common.h"
+#ifndef _TETRIS_H_
+#define _TETRIS_H_
+
 #include "program.h"
+#include <set>
+#include <cstdlib>
+
+namespace pic {
+    constexpr Pixel COLORS[] = {RED, GREEN, BLUE};
+}
 
 class Tetris : public Program {
-private:
-    struct Point { int x, y; };
-    
-    std::array<Pixel, ROWS*COLS> grid{};
-    std::vector<Point> currentPiece;
-    Point piecePos;
-    bool gameOver = false;
-
-    // Фиксированные фигуры из 3 пикселей
-    const std::vector<std::vector<Point>> SHAPES = {
-        {{0,0}, {1,0}, {2,0}},  // Горизонтальная линия
-        {{0,0}, {0,1}, {0,2}},  // Вертикальная линия
-        {{0,0}, {1,0}, {0,1}},  // Уголок
-        {{0,0}, {1,0}, {1,1}}   // Блок с выступом
-    };
-
-public:
-    Tetris() {
-        resetGame();
-    }
-
-    std::optional<std::array<Pixel, ROWS*COLS>> update(unsigned delta_us, const Input& inp) override {
-        if (gameOver) return std::nullopt;
-
-        auto inputs = std::set<int>(inp.begin(), inp.end());
-
-        // Только движение влево/вправо
-        if (inputs.contains(0) && canMove(-1, 0)) piecePos.x--;  // Влево (кнопка 0)
-        if (inputs.contains(1) && canMove(1, 0))  piecePos.x++;   // Вправо (кнопка 1)
-
-        // Автоматическое падение
-        static unsigned int fallTimer = 0;
-        fallTimer += delta_us;
-        if (fallTimer > 1000000) {  // Падение каждую секунду (1,000,000 мкс)
-            fallTimer = 0;
-            if (!moveDown()) {
-                lockPiece();
-                spawnPiece();
-            }
-        }
-
-        updateGrid();
-        return grid;
-    }
-
-    unsigned short preferredFPS() override {
-        return 10;  // 10 FPS достаточно для такой простой игры
-    }
-
-private:
-    void resetGame() {
-        grid.fill(static_cast<Pixel>(0));
-        gameOver = false;
-        spawnPiece();
-    }
-
-    void spawnPiece() {
-        static int shapeIndex = 0;
-        currentPiece = SHAPES[shapeIndex++ % SHAPES.size()];
-        piecePos = {COLS/2 - 1, 0};  // Стартовая позиция по центру
+    struct Piece {
+        unsigned bits;
+        Pixel color;
+        int x, y;
         
-        if (checkCollision()) gameOver = true;
-    }
-
-    bool canMove(int dx, int dy) const {
-        for (auto& p : currentPiece) {
-            int x = piecePos.x + p.x + dx;
-            int y = piecePos.y + p.y + dy;
-            if (x < 0 || x >= COLS || y >= ROWS || (y >= 0 && grid[y*COLS + x] != 0))
-                return false;
+        Piece(unsigned b, Pixel c, int x, int y) : bits(b), color(c), x(x), y(y) {}
+        
+        bool cell(int dx, int dy) const {
+            return bits & (1 << (dy * 3 + dx));
         }
-        return true;
-    }
-
-    bool moveDown() {
-        if (canMove(0, 1)) {
-            piecePos.y++;
-            return true;
+    };
+    
+    Picture grid{};
+    Piece current{0b010010010, RED, 1, 0};
+    unsigned lastMove = 0;
+    
+    bool collide(const Piece& p) const {
+        for (int dy = 0; dy < 3; ++dy) {
+            for (int dx = 0; dx < 3; ++dx) {
+                if (p.cell(dx, dy)) {
+                    int nx = p.x + dx, ny = p.y + dy;
+                    if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+                    if (ny >= 0 && grid[ny * COLS + nx] != 0) return true;
+                }
+            }
         }
         return false;
     }
-
-    void lockPiece() {
-        for (auto& p : currentPiece) {
-            int x = piecePos.x + p.x;
-            int y = piecePos.y + p.y;
-            if (y >= 0) grid[y*COLS + x] = RED;  // Фиксируем фигуры красным
-        }
-        clearLines();
-    }
-
-    void clearLines() {
-        for (int y = ROWS-1; y >= 0; y--) {
-            bool full = true;
-            for (int x = 0; x < COLS; x++)
-                if (grid[y*COLS + x] == 0) full = false;
-            
-            if (full) {
-                for (int yy = y; yy > 0; yy--)
-                    for (int x = 0; x < COLS; x++)
-                        grid[yy*COLS + x] = grid[(yy-1)*COLS + x];
-                
-                for (int x = 0; x < COLS; x++)
-                    grid[x] = static_cast<Pixel>(0);
+    
+    void merge(const Piece& p) {
+        for (int dy = 0; dy < 3; ++dy) {
+            for (int dx = 0; dx < 3; ++dx) {
+                if (p.cell(dx, dy)) {
+                    int nx = p.x + dx, ny = p.y + dy;
+                    if (ny >= 0) grid[ny * COLS + nx] = p.color;
+                }
             }
         }
     }
-
-    bool checkCollision() const {
-        return !canMove(0, 0);
+    
+    void clearLines() {
+        for (int y = 0; y < ROWS; ++y) {
+            bool full = true;
+            for (int x = 0; x < COLS; ++x) {
+                if (grid[y * COLS + x] == 0) { full = false; break; }
+            }
+            if (full) {
+                for (int x = 0; x < COLS; ++x) {
+                    grid[y * COLS + x] = pic::COLORS[x % 3];
+                }
+            }
+        }
+    }
+    
+    void newPiece() {
+        current = Piece{
+            0b111 << (std::rand() % 3 * 3),
+            pic::COLORS[std::rand() % 3],
+            COLS/2 - 1,
+            -2
+        };
     }
 
-    void updateGrid() {
-        // Очищаем только незафиксированные пиксели
-        for (int i = 0; i < grid.size(); i++) {
-            if (grid[i] == GREEN) grid[i] = static_cast<Pixel>(0);  // Стираем предыдущее положение
-        }
+public:
+    Tetris() { newPiece(); }
+    
+    std::optional<Picture> update(unsigned delta_us, const Input& inp) override {
+        auto inputs = std::set<int>(inp.begin(), inp.end());
+
+        lastMove += delta_us;
         
-        // Рисуем текущую фигуру зеленым
-        for (auto& p : currentPiece) {
-            int x = piecePos.x + p.x;
-            int y = piecePos.y + p.y;
-            if (y >= 0 && x >= 0 && x < COLS && y < ROWS)
-                grid[y*COLS + x] = GREEN;
+        if (inputs.contains(0)) current.x--;
+        if (inputs.contains(1)) current.x++;
+        
+        if (lastMove > 1000000 / preferredFPS()) {
+            lastMove = 0;
+            current.y++;
+            
+            if (collide(current)) {
+                current.y--;
+                merge(current);
+                clearLines();
+                newPiece();
+                if (collide(current)) grid.fill((Pixel) 0);
+            }
         }
+
+        merge(current);
+        return grid;
+    }
+    
+    unsigned short preferredFPS() override {
+        return 10;
     }
 };
+
+#endif // _TETRIS_H_
