@@ -1,7 +1,7 @@
 #ifndef _PROGRAM_H_
 #define _PROGRAM_H_
 
-#include "common.h"
+#include "../common.h"
 #include "../config.h"
 #include "../display.h"
 

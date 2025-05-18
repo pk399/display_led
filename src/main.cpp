@@ -43,7 +43,7 @@ void setup()
     uart_init(uart1, UART_BAUD);
 
     game = new Spiner;
-    delay = get_delay(game.preffered_fps());
+    delay = get_delay(game->preferred_fps());
 }
 
 void loop()
@@ -60,7 +60,7 @@ void loop()
     {
         delete game;
         game = create_prog(in[0]);
-        delay = get_delay(game.preffered_fps());
+        delay = get_delay(game->preferred_fps());
     }
     else
     {
@@ -70,7 +70,7 @@ void loop()
             {
                 delete game;
                 game = new Spiner;
-                delay = get_delay(game.preffered_fps());
+                delay = get_delay(game->preferred_fps());
                 // wow so many dependencies
             }
         }
@@ -84,7 +84,7 @@ void loop()
     {
         delete game;
         game = new Spiner;
-        delay = get_delay(game.preffered_fps());
+        delay = get_delay(game->preferred_fps());
     }
 
     sleep_us( delay );
