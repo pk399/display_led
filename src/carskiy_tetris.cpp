@@ -128,13 +128,22 @@ public:
 };
 
 
-const int fld_width = 6;
-const int fld_height = 5;
+const int fld_width = 7;
+const int fld_height = 6;
 
 const int shp_width = 3;
 const int shp_height = 3;
 
 
+const std::vector<std::vector<int> > Default_f= {
+    {0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0},
+    {1,1,1,1,1,1,1}
+
+};
 
 const std::vector<std::vector<std::vector<int> >> Forms = 
 {
@@ -185,6 +194,8 @@ public:
     int getY() const { return y; }
     void setX(int newX) { x = newX; }
     void setY(int newY) { y = newY; }
+    void setdX(int newX) { x += newX; }
+    void setdY(int newY) { y += newY; }
     void decX() { x--; }
     void incX() { x++; }
     void incY() { y++; }
@@ -226,14 +237,16 @@ class Tetris{
     public:
     Tetris(){
         cur_fig = Figure();
-        stat_field = Matrix(fld_height, fld_width);
+        stat_field = Matrix(Default_f);
         cur_field = stat_field + cur_fig.broadcast(); 
     }
 
-    void next_turn(){
+    int next_turn(const int inputs){
+
+        cur_fig.setdX(inputs);
 
         Matrix cur_fig_matrix = cur_fig.broadcast();
-    
+        
 
         if (cur_fig_matrix.getRows() != stat_field.getRows() || cur_fig_matrix.getCols() != stat_field.getCols()) {
             throw std::invalid_argument("Matrix dimensions must agree for addition");
@@ -241,17 +254,35 @@ class Tetris{
         
 
         Matrix result(fld_height, fld_width);
+
         for (size_t i = 0; i < fld_height; ++i) {
+
+
             for (size_t j = 0; j < fld_width; ++j) {
                 if(cur_fig_matrix(i, j) != 0 && stat_field(i, j)!=0){
-                    stat_field = cur_field;
-                    cur_fig = Figure(3,0);
-                    return;
+                    if(i == 0) return 1; // GAMEOVER значит что текущий блок столкнулся с блоком окружения наход. на 0 высоте
+
+                    if(stat_field(i - 1, j) == 0){
+                        stat_field = cur_field;
+                        cur_fig = Figure(3,0);
+                        cur_field = stat_field + cur_fig.broadcast(); 
+                        return 0;
+                    }
+
+                    else{
+                        cur_fig.setdX(-inputs);
+                        return 0;
+                    }
+
+
                 }
                 else result(i, j) = cur_fig_matrix(i, j) + stat_field(i, j);
+
+
             }
         }
         cur_field = result;
+        return 0;
 
     }
 
@@ -262,11 +293,11 @@ class Tetris{
 
     void update(const int inputs)
     {   
-        
-        if (inputs == 0) cur_fig.incX();
-        if (inputs == 1) cur_fig.decX();
         cur_fig.incY();
-        next_turn();
+        if(next_turn(inputs)){
+            std::cout << "GAMEOVER" << std::endl;
+            return;
+        }
         std::cout<<cur_field;
     }
     
@@ -281,7 +312,7 @@ class Tetris{
  int main(){
     Tetris game;
 
-    for (int i = 0; i<10;i++){
+    for (int i = 0; i<50;i++){
         int input;
         std::cin >> input;
         game.update(input);
