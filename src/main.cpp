@@ -56,7 +56,7 @@ void loop()
         in.push_back( buf );
     }
 
-    if (typeid(game) == typeid(Spiner) && in.size() > 0)
+    if (game->is_spiner() && in.size() > 0)
     {
         delete game;
         game = create_prog(in[0]);
@@ -64,15 +64,19 @@ void loop()
     }
     else
     {
-        for (auto v : in)
+        for (auto& v : in)
         {
-            if (v == -1)
+            if (v == 0)
             {
                 delete game;
                 game = new Spiner;
                 delay = get_delay(game->preferred_fps());
                 // wow so many dependencies
+
+                break;
             }
+
+            --v;
         }
     }
 

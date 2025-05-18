@@ -19,17 +19,17 @@ int sh = 0; // to test inputs
 public:
 std::optional<Picture> update(unsigned delta_us, const Input& inputs) override
 {
-    //t += delta_us;
+    t += delta_us;
 
-    if (inputs.size()) t += inputs[0];
+    //if (inputs.size()) t += inputs[0];
 
     for (int y = 0; y < ROWS; y++)
     {
         for (int x = 0; x < COLS; x++)
         {
-            bool r = static_cast<int>(origin.dist({x - .3, y + .3}) + t) % 3 == 0;
-            bool g = static_cast<int>(origin.dist({x + .1, y + .1}) + t) % 3 == 1;
-            bool b = static_cast<int>(origin.dist({x - .3, y - .3}) + t) % 3 == 2;
+            bool r = static_cast<int>(origin.dist({x - .3, y + .3}) + t*speed) % 3 == 0;
+            bool g = static_cast<int>(origin.dist({x + .1, y + .1}) + t*speed) % 3 == 1;
+            bool b = static_cast<int>(origin.dist({x - .3, y - .3}) + t*speed) % 3 == 2;
 
             pic[x + COLS*y] = static_cast<Pixel>(RED*r + GREEN*g + BLUE*b);
         }

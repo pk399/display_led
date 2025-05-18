@@ -23,6 +23,12 @@ std::pair<int, int> to_xy(int pos)
 }
  
 public:
+unsigned short preferred_fps()
+{ return 5; }
+
+bool is_spiner()
+{ return true; }
+
 std::optional<Picture> update(unsigned delta_us, const Input& inputs) override
 {
     Picture pic{};

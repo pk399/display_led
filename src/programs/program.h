@@ -17,6 +17,11 @@ virtual unsigned short preferred_fps()
     return DEFAULT_FPS;
 }
 
+// Do NOT change
+virtual bool is_spiner()
+{
+    return false;
+}
 };
 
 

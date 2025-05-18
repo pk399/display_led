@@ -239,6 +239,8 @@ class Tetris: public Program{
     Figure cur_fig;
     Matrix stat_field;
     Matrix cur_field;
+    unsigned time = 0;
+    int last_input = 0;
 
     public:
     Tetris(){
@@ -298,22 +300,33 @@ class Tetris: public Program{
 
 
     std::optional<Picture> update(unsigned delta_us, const Input& inp)
-    {   
-        cur_fig.incY();
-        if(next_turn(inp.size() ? inp[0] - 2 : 0)){
-            // ABOB std::cout << "GAMEOVER" << std::endl;
-            return std::nullopt;
+    {
+        if (inp.size()) last_input = inp[0] - 1;
+
+        time += delta_us;
+
+        if (time > 1000000)
+        {
+            time = 0;
+        
+            cur_fig.incY();
+            if(next_turn(last_input)){
+                // ABOB std::cout << "GAMEOVER" << std::endl;
+                return std::nullopt;
+            }
+
+            last_input = 0;
         }
         // ABOB std::cout<<cur_field;
-        Picture pic;
+        Picture pic{};        
 
-        for (int i = 0; i < COLS; i++)
+        for (int i = 0; i < ROWS; i++)
         {
-            for (int j = 0; j < ROWS; j++)
+            for (int j = 0; j < COLS; j++)
             {
-                if (cur_field(j, i))
+                if (cur_field(ROWS - 1 - i, j))
                 {
-                    pic[j + i*ROWS] = GREEN;
+                    pic[j + i*COLS] = GREEN;
                 }
             }
         }
@@ -322,7 +335,7 @@ class Tetris: public Program{
     }
     
     unsigned short preferred_fps() {
-        return 1;
+        return 30;
     }
  };
 

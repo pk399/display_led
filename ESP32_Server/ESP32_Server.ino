@@ -77,7 +77,7 @@ void handleRoot() {
 
 void handleLED() {
   uint8_t num = server.arg("num").toInt();
-  
+
   Serial.write(num);
 
   server.send(200, "text/plain", "OK");
