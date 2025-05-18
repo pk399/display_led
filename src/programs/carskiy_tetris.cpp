@@ -28,9 +28,10 @@ public:
         if (rows > 0) {
             cols = input[0].size();
             // Проверка, что все строки одинаковой длины
-            for (size_t i = 0; i < input.size(); ++i) {
-                if (input[i].size() != cols) {
-                    throw std::invalid_argument("All rows must have the same length");
+            for (auto& v: data) {
+                if (v.size() != cols) {
+                    // BOLT throw std::invalid_argument("All rows must have the same length");
+                    v.resize(cols);
                 }
             }
         } else {
@@ -45,14 +46,16 @@ public:
     // Доступ к элементам матрицы
     int& operator()(size_t row, size_t col) {
         if (row >= rows || col >= cols) {
-            throw std::out_of_range("Matrix indices out of range");
+            // BOLT throw std::out_of_range("Matrix indices out of range");
+            return data[0][0];
         }
         return data[row][col];
     }
 
     const int& operator()(size_t row, size_t col) const {
         if (row >= rows || col >= cols) {
-            throw std::out_of_range("Matrix indices out of range");
+            // BOLT throw std::out_of_range("Matrix indices out of range");
+            return data[0][0];
         }
         return data[row][col];
     }
@@ -60,7 +63,8 @@ public:
     // Оператор сложения матриц
     Matrix operator+(const Matrix& other) const {
         if (rows != other.rows || cols != other.cols) {
-            throw std::invalid_argument("Matrix dimensions must agree for addition");
+            // BOLT throw std::invalid_argument("Matrix dimensions must agree for addition");
+            return Matrix{};
         }
         
         Matrix result(rows, cols);
@@ -75,7 +79,8 @@ public:
     // Оператор вычитания матриц
     Matrix operator-(const Matrix& other) const {
         if (rows != other.rows || cols != other.cols) {
-            throw std::invalid_argument("Matrix dimensions must agree for subtraction");
+            // BOLT throw std::invalid_argument("Matrix dimensions must agree for subtraction");
+            return Matrix{};
         }
         
         Matrix result(rows, cols);
@@ -101,7 +106,8 @@ public:
     // Умножение матрицы на матрицу
     Matrix operator*(const Matrix& other) const {
         if (cols != other.rows) {
-            throw std::invalid_argument("Number of columns in first matrix must equal number of rows in second matrix");
+            // BOLT throw std::invalid_argument("Number of columns in first matrix must equal number of rows in second matrix");
+            return Matrix{};
         }
         
         Matrix result(rows, other.cols);
@@ -166,7 +172,7 @@ public:
 
     Figure() : x(1), y(-3) {
         // Инициализация генератора случайных чисел
-        std::srand(std::time(0));
+        // BOLT std::srand(std::time(0));
         
         // Выбор случайного цвета (1-3)
         color = std::rand() % 3 + 1;
@@ -178,7 +184,7 @@ public:
 
     Figure(int x, int y) : x(x), y(y) {
         // Инициализация генератора случайных чисел
-        std::srand(std::time(0));
+        // BOLT std::srand(std::time(0));
         
         // Выбор случайного цвета (1-3)
         color = std::rand() % 3 + 1;
@@ -229,7 +235,7 @@ public:
 }
 };
 
-class Tetris{
+class Tetris: public Program{
     Figure cur_fig;
     Matrix stat_field;
     Matrix cur_field;
@@ -248,9 +254,9 @@ class Tetris{
         Matrix cur_fig_matrix = cur_fig.broadcast();
         
 
-        if (cur_fig_matrix.getRows() != stat_field.getRows() || cur_fig_matrix.getCols() != stat_field.getCols()) {
-            throw std::invalid_argument("Matrix dimensions must agree for addition");
-        }
+        // BOLT if (cur_fig_matrix.getRows() != stat_field.getRows() || cur_fig_matrix.getCols() != stat_field.getCols()) {
+        // BOLT     throw std::invalid_argument("Matrix dimensions must agree for addition");
+        // BOLT }
         
 
         Matrix result(fld_height, fld_width);
@@ -291,32 +297,48 @@ class Tetris{
 
 
 
-    void update(const int inputs)
+    std::optional<Picture> update(unsigned delta_us, const Input& inp)
     {   
         cur_fig.incY();
-        if(next_turn(inputs)){
-            std::cout << "GAMEOVER" << std::endl;
-            return;
+        if(next_turn(inp.size() ? inp[0] - 2 : 0)){
+            // ABOB std::cout << "GAMEOVER" << std::endl;
+            return std::nullopt;
         }
-        std::cout<<cur_field;
+        // ABOB std::cout<<cur_field;
+        Picture pic;
+
+        for (int i = 0; i < COLS; i++)
+        {
+            for (int j = 0; j < ROWS; j++)
+            {
+                if (cur_field(j, i))
+                {
+                    pic[j + i*ROWS] = GREEN;
+                }
+            }
+        }
+
+        return pic;
     }
     
-    unsigned short preferredFPS() {
-        return 10;
+    unsigned short preferred_fps() {
+        return 1;
     }
  };
 
 
-
-
+/*
+#ifndef main
  int main(){
     Tetris game;
 
     for (int i = 0; i<50;i++){
         int input;
         std::cin >> input;
-        game.update(input);
+        game.update(52, std::vector<int>{input});
     }
 
 
  }
+#endif // main
+*/
