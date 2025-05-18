@@ -1,10 +1,8 @@
 #include "common.h"
 #include "display.h"
 #include "config.h"
-#include "program.h"
 
-#include "tetris.cpp"
-#include "circles.cpp"
+#include "programs/programs.h"
 
 constexpr int UART_BAUD = 115200;
 
