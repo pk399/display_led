@@ -5,6 +5,7 @@ This is a code for a DIY project of a RGB LED Matrix
 ## Folder structure
 
 - `src` - code for the Raspberry Pi Pico microcontroller, `CMakeLists.txt` builds it
+- `ESP32_Server` - code for the ESP32 for sending inputs through UART
 
 ## Hardware setup
 
