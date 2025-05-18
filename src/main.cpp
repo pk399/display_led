@@ -14,11 +14,16 @@ constexpr int UART_TX_PIN = 20; // UART1
 constexpr int UART_RX_PIN = 21;
 constexpr int BLINKY_PIN = 25;
 
-#define MILLION 1000000
+unsigned get_delay(unsigned fps)
+{
+    const int  MILLION = 1000000;
+
+    return MILLION / fps;
+}
+
+unsigned delay = get_delay(1);
 
 Display* display;
-
-unsigned delay = MILLION / DEFAULT_FPS;
 
 Program* game;
 
@@ -36,18 +41,39 @@ void setup()
     gpio_set_function(UART_TX_PIN, UART_FUNCSEL_NUM(uart1, UART_TX_PIN));
     gpio_set_function(UART_RX_PIN, UART_FUNCSEL_NUM(uart1, UART_RX_PIN));
     uart_init(uart1, UART_BAUD);
+
+    game = new Spiner;
+    delay = get_delay(game.preffered_fps());
 }
 
 void loop()
 {
-    if (!game) { game = new Circles; }
-    
     Input in{};
 
     while ( uart_is_readable( uart1 ) > 0 ) {
         uint8_t buf {};
         uart_read_blocking( uart1, &buf, 1 );
         in.push_back( buf );
+    }
+
+    if (typeid(game) == typeid(Spiner) && in.size() > 0)
+    {
+        delete game;
+        game = create_prog(in[0]);
+        delay = get_delay(game.preffered_fps());
+    }
+    else
+    {
+        for (auto v : in)
+        {
+            if (v == -1)
+            {
+                delete game;
+                game = new Spiner;
+                delay = get_delay(game.preffered_fps());
+                // wow so many dependencies
+            }
+        }
     }
 
     auto res = game->update( delay, in );
@@ -57,7 +83,8 @@ void loop()
     else
     {
         delete game;
-        game = new Tetris;
+        game = new Spiner;
+        delay = get_delay(game.preffered_fps());
     }
 
     sleep_us( delay );
